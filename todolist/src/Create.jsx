@@ -1,22 +1,22 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { addTodo } from "./api";
 
 function Create({ setTodos }) {
   const [task, setTask] = useState("");
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (task.trim() === "") {
       alert("Task cannot be empty!");
       return;
     }
-    axios
-      .post("http://localhost:3001/add/", { task: task })
-      .then((result) => {
-        setTask("");
-        setTodos((prevTodos) => [...prevTodos, result.data]);
-        console.log("Task added:", result.data);
-      })
-      .catch((err) => console.log(err));
+    try {
+      const newTask = await addTodo(task);
+      setTask("");
+      setTodos((prevTodos) => [...prevTodos, newTask]);
+      console.log("Task added:", newTask);
+    } catch (err) {
+      console.log("Error adding task:", err);
+    }
   };
 
   return (

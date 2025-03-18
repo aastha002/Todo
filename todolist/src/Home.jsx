@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Create from "./Create";
-import axios from "axios";
+import { fetchTodos, deleteItem, updateTodo } from "./api";
 import {
   BsCircleFill,
   BsFillTrashFill,
@@ -11,34 +11,39 @@ function Home() {
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/get/")
-      .then((result) => {
-        setTodos(result.data);
-      })
-      .catch((err) => console.log(err));
+    loadTodos();
   }, []);
 
-  const handleEdit = (id) => {
-    axios
-      .put("http://localhost:3001/update/" + id)
-      .then((result) => {
-        setTodos((prevTodos) =>
-          prevTodos.map((todo) =>
-            todo._id === id ? { ...todo, done: !todo.done } : todo
-          )
-        );
-      })
-      .catch((err) => console.log(err));
+  const loadTodos = async () => {
+    try {
+      const data = await fetchTodos();
+      setTodos(data);
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+    }
   };
 
-  const handleDelete = (id) => {
-    axios
-      .delete("http://localhost:3001/delete/" + id)
-      .then((result) => {
-        setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
-      })
-      .catch((err) => console.log(err));
+  const handleEdit = async (id) => {
+    try {
+      await updateTodo(id);
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo._id === id ? { ...todo, done: !todo.done } : todo
+        )
+      );
+    } catch (err) {
+      console.log("Error updating task:", err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteItem(id);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
+      console.log("Item deleted");
+    } catch (err) {
+      alert("Error deleting item");
+    }
   };
 
   return (
